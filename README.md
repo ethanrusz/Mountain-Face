@@ -1,2 +1,2 @@
 # Mountain-Face
-Frontend component for Mountian-Project-Project.
+Frontend component for Mountain-Project-Project.
