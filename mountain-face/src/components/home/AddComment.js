@@ -6,10 +6,12 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import MainService from "../../services/mainService";
+import AuthService from "../../services/authService";
 
 export default function AddComment(props) {
     const [open, setOpen] = React.useState(false);
-
+    const [comment, setComment] = React.useState('');
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -17,6 +19,34 @@ export default function AddComment(props) {
     const handleClose = () => {
         setOpen(false);
     };
+
+    function postComment() {
+        console.log(props.route);
+        console.log('comment');
+        console.log(comment);
+
+        MainService.addComment( props.route.id, 'John Snow', comment).then(response => {
+            if (props.comments){
+                props.setComments([
+                    ...props.comments,
+                    {
+                        username: AuthService.getLocalToken(),
+                        comment: comment
+                    }
+                ])
+            } else {
+                props.setComments([
+                    {
+                        username: AuthService.getLocalToken(),
+                        comment: comment
+                    }
+                ]);
+            }
+
+            console.log(response);
+            handleClose();
+        });
+    }
 
     return (
         <div style={{float: 'right'}} >
@@ -27,21 +57,13 @@ export default function AddComment(props) {
                 <DialogTitle id="form-dialog-title">New Comment</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        {/*To subscribe to this website, please enter your email address here. We will send updates*/}
-                        {/*occasionally.*/}
+
                     </DialogContentText>
+
                     <TextField
                         color={"secondary"}
                         autoFocus
-                        margin="dense"
-                        id="name"
-                        label="Heading"
-                        type="text"
-                        fullWidth
-                    />
-                    <TextField
-                        color={"secondary"}
-                        autoFocus
+                        onChange={event => setComment(event.target.value)}
                         margin="dense"
                         id="body"
                         label="Body"
@@ -53,8 +75,8 @@ export default function AddComment(props) {
                     <Button variant="contained" onClick={handleClose} color="secondary">
                         Cancel
                     </Button>
-                    <Button variant="contained" onClick={handleClose} color="secondary">
-                        Save
+                    <Button variant="contained" onClick={postComment} color="secondary">
+                        Post
                     </Button>
                 </DialogActions>
             </Dialog>

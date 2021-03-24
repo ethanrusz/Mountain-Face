@@ -15,6 +15,7 @@ import {Paper} from "@material-ui/core";
 import AddComment from "./AddComment";
 import Reply from "./Reply";
 import EditComment from "./EditComment";
+import AuthService from "../../services/authService";
 
 
 const styles = (theme) => ({
@@ -67,7 +68,13 @@ Alert.propTypes = {
 
 export default function RouteDialog(props) {
 
+    const [comments, setComments] = React.useState(props.route.comments);
+
     const [open, setOpen] = React.useState(false);
+
+    const IMAGE_URL = 'http://localhost:8080/image?name='
+    // const IMAGE_URL = 'http://localhost:8080/image?name=50+More+Seconds+of+Fun'
+    const IMAGE_URL_FALLBACK = 'https://cdn.pixabay.com/photo/2016/07/17/21/44/mountains-1524804_960_720.png'
 
 
     const handleClickOpen = () => {
@@ -88,40 +95,17 @@ export default function RouteDialog(props) {
                             </Grid>
                             <Grid justifyContent="left" item xs zeroMinWidth>
                                 <div style={{display: "inline-block", width: '60%'}}>
-                                    <h3 style={{margin: 0, textAlign: "left"}}>{props.comment.heading}</h3>
-                                    <h4 style={{margin: 0, textAlign: "left"}}>By John Snow</h4>
+                                    <h5 style={{margin: 0, textAlign: "left"}}>
+                                        {props.comment.comment}
+                                    </h5>
                                     <p style={{textAlign: "left"}}>
-                                        {props.comment.body}
-                                    </p>
-                                    <p style={{textAlign: "left"}}>
-                                        posted 1 minute ago
+                                        By {props.comment.username}
                                     </p>
                                 </div>
-                                <div style={{display: "inline-block", width: '38%'}}>
-                                    {/*<Button style={{float: 'right'}} variant="contained" onClick={handleClose} color="secondary">*/}
-                                    {/*    Reply*/}
-                                    {/*</Button>*/}
-                                    {/*<Button style={{float: 'right', marginRight: 20}} variant="contained" onClick={handleClose} color="secondary">*/}
-                                    {/*    Edit*/}
-                                    {/*</Button>*/}
-                                    <div style={{float: 'right'}}>
-                                        <Reply comment={props.comment}/>
-                                    </div>
-                                    <div style={{float: 'right', marginRight: 20}}>
-                                        <EditComment comment={props.comment}/>
-                                    </div>
-                                </div>
+
                             </Grid>
                         </Grid>
                     </Paper>
-                </div>
-                <div style={{marginLeft: 40}}>
-                    {props.comment.replies &&
-                    (props.comment.replies.map((comment) => (
-                                <CommentItem comment={comment}/>
-                            )
-                        )
-                    )}
                 </div>
             </div>
         );
@@ -140,7 +124,11 @@ export default function RouteDialog(props) {
                     <Grid container spacing={1}>
                         <Grid item sm={4}>
                             <div>
-                                <img alt={props.route.route} src={process.env.PUBLIC_URL + 'assets/ProjectImages/' + props.route.route + '.jpg'}
+                                <img alt={props.route.route}
+                                     src={IMAGE_URL + props.route.route}
+                                     onError={e => {
+                                         e.target.src = IMAGE_URL_FALLBACK;
+                                     }}
                                      style={{maxWidth: '80%', borderRadius: 6}}/>
                             </div>
                         </Grid>
@@ -200,14 +188,22 @@ export default function RouteDialog(props) {
                         <div style={{}}>
                             <Typography variant={"h5"} style={{fontWeight: 'bold', marginBottom: 10}}>
                                 Comments
-                                <AddComment route={props.route}/>
+                                {AuthService.hasLocalToken() ?
+                                    <AddComment route={props.route} comments={comments} setComments={setComments}/>
+                                    :
+                                    <Typography variant={"h5"} style={{fontWeight: 'bold', textAlign: 'right'}}>
+                                        Login to leave a comment
+                                    </Typography>
+                                }
                             </Typography>
                         </div>
                         <hr/>
                         <div style={{marginTop: 25}}>
-                            {props.route.comments.map((comment) => (
+                            {comments &&
+                            (comments.map((comment) => (
                                 <CommentItem comment={comment}/>
-                            ))}
+                            )))
+                            }
                         </div>
                     </div>
                 </DialogContent>

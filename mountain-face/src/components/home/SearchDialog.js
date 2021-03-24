@@ -26,6 +26,7 @@ import EditComment from "./EditComment";
 import BackspaceIcon from "@material-ui/icons/Backspace";
 import RouteDialog from "./RouteDialog";
 import { makeStyles } from '@material-ui/core/styles';
+import MainService from "../../services/mainService";
 
 
 const styles = (theme) => ({
@@ -161,12 +162,14 @@ export default function SearchDialog(props) {
                     </Paper>
                 </div>
                 <div style={{marginLeft: 40}}>
-                    {props.comment.replies &&
-                    (props.comment.replies.map((comment) => (
-                                <CommentItem comment={comment} />
-                            )
-                        )
-                    )}
+                    {props.comment &&
+                    (props.comment.replies &&
+                            (props.comment.replies.map((comment) => (
+                                        <CommentItem comment={comment} />
+                                    )
+                                )
+                            ))
+                    }
                 </div>
             </div>
         );
@@ -179,85 +182,112 @@ export default function SearchDialog(props) {
     const [filterMaxPitch, setFilterMaxPitch] = React.useState(null);
     const [filterRating, setFilterRating] = React.useState(null);
     const [filterSearchRouteTerm, setFilterSearchRouteTerm] = React.useState('');
+    const [filterSearchLocationTerm, setFilterSearchLocationTerm] = React.useState('');
+    const [searchPosition, setSearchPosition] = React.useState(null);
+    const [maxDistance, setMaxDistance] = React.useState(50);
 
 
 
+
+    const [loadLimit, setLoadLimit] = React.useState(10);
+    const [searchData, setSearchData] = React.useState([]);
     const [filterData, setFilterData] = React.useState([]);
 
     const updateFilterData = () => {
         let tempHold = [];
         let addedRouteIDs = [];
 
-        for (const route of props.data){
+        if (searchData){
+            for (const route of searchData.splice(0, loadLimit)){
 
-            if (filterSearchRouteTerm){
-                if (route.route.toLowerCase().includes(filterSearchRouteTerm.toLowerCase()) > 0){
-                    if (!addedRouteIDs.includes(route.id)){
-                        tempHold.push(route);
-                        addedRouteIDs.push(route.id);
-                    }
-                }
-            }
-
-            if (filterType){
-                if (route.route_type === filterType){
-                    if (!addedRouteIDs.includes(route.id)){
-                        tempHold.push(route);
-                        addedRouteIDs.push(route.id);
-                    }
-                }
-            }
-            if (filterMinDistance){
-                if (route.length){
-                    if (route.length >= filterMinDistance){
+                if (filterType){
+                    if (route.route_type === filterType){
                         if (!addedRouteIDs.includes(route.id)){
                             tempHold.push(route);
                             addedRouteIDs.push(route.id);
                         }
                     }
                 }
-            }
-            if (filterMaxDistance){
-                if (route.length){
-                    if (route.length <= filterMaxDistance){
-                        if (!addedRouteIDs.includes(route.id)){
-                            tempHold.push(route);
-                            addedRouteIDs.push(route.id);
+                if (filterMinDistance){
+                    if (route.length){
+                        if (route.length >= filterMinDistance){
+                            if (!addedRouteIDs.includes(route.id)){
+                                tempHold.push(route);
+                                addedRouteIDs.push(route.id);
+                            }
+                        }
+                    }
+                }
+                if (filterMaxDistance){
+                    if (route.length){
+                        if (route.length <= filterMaxDistance){
+                            if (!addedRouteIDs.includes(route.id)){
+                                tempHold.push(route);
+                                addedRouteIDs.push(route.id);
+                            }
+                        }
+                    }
+
+                }
+                if (filterMinPitch){
+                    if (route.pitches){
+                        if (route.pitches >= filterMinPitch){
+                            if (!addedRouteIDs.includes(route.id)){
+                                tempHold.push(route);
+                                addedRouteIDs.push(route.id);
+                            }
+                        }
+                    }
+                }
+                if (filterMaxPitch){
+                    if (route.pitches){
+                        if (route.pitches <= filterMaxPitch){
+                            if (!addedRouteIDs.includes(route.id)){
+                                tempHold.push(route);
+                                addedRouteIDs.push(route.id);
+                            }
                         }
                     }
                 }
 
+                setFilterData(tempHold);
             }
-            if (filterMinPitch){
-                if (route.pitches){
-                    if (route.pitches >= filterMinPitch){
-                        if (!addedRouteIDs.includes(route.id)){
-                            tempHold.push(route);
-                            addedRouteIDs.push(route.id);
-                        }
-                    }
-                }
-            }
-            if (filterMaxPitch){
-                if (route.pitches){
-                    if (route.pitches <= filterMaxPitch){
-                        if (!addedRouteIDs.includes(route.id)){
-                            tempHold.push(route);
-                            addedRouteIDs.push(route.id);
-                        }
-                    }
-                }
-            }
-
-
         }
-        setFilterData(tempHold);
 
+    };
+
+    const handleFilterSearchLocationTermChange = (value) => {
+        setFilterSearchLocationTerm(value);
     };
 
     const handleFilterSearchRouteTermChange = (value) => {
+        if (value !== ''){
+            MainService.searchTerm(value).then(searchResults => {
+                console.log(searchResults);
+                setSearchData(searchResults);
+            });
+        } else {
+            setSearchData([]);
+        }
         setFilterSearchRouteTerm(value);
+
     };
+
+    function getPos(){
+        if (filterSearchLocationTerm.length > 3){
+            MainService.getPosition(filterSearchLocationTerm).then(searchResults => {
+                if (searchResults){
+                    console.log('searchResults');
+                    console.log(searchResults);
+                    if (searchResults.data.length > 0){
+                        setSearchPosition(searchResults.data[0]);
+                    }
+                }
+
+                // setSearchData(searchResults);
+            });
+        }
+    }
 
     const handleFilterTypeChange = (value) => {
         setFilterType(value);
@@ -298,7 +328,13 @@ export default function SearchDialog(props) {
     };
 
     const clearFilterSearchTerm = () => {
+        setSearchData([]);
         setFilterSearchRouteTerm('');
+    };
+
+    const clearFilterSearchLocationTerm = () => {
+        setSearchPosition(null);
+        setFilterSearchLocationTerm('');
     };
 
     const routeTypes = [
@@ -313,9 +349,24 @@ export default function SearchDialog(props) {
     ];
 
     useMemo(function(){
+        if (searchPosition !== null){
+            MainService.searchLocation(searchPosition.latitude, searchPosition.longitude, maxDistance).then(results => {
+                console.log(results);
+            });
+        }
+
+        // return undefined;
+    }, [searchPosition]);
+
+
+    useMemo(function(){
         updateFilterData();
         // return undefined;
     }, [filterType, filterMinDistance, filterMaxDistance, filterMinPitch, filterMaxPitch, filterRating, filterSearchRouteTerm]);
+
+    const IMAGE_URL = 'http://localhost:8080/image?name='
+    // const IMAGE_URL_FALLBACK = 'http://localhost:8080/image?name=50+More+Seconds+of+Fun'
+    const IMAGE_URL_FALLBACK = 'https://cdn.pixabay.com/photo/2016/07/17/21/44/mountains-1524804_960_720.png'
 
     return (
         <div>
@@ -436,33 +487,7 @@ export default function SearchDialog(props) {
                                     </TextField>
                                 </div>
                             </div>
-                            <div className="d-inline-block align-top m-1">
-                                <Typography variant="subtitle1" display="block" gutterBottom>
-                                    Rating
-                                    <div className="d-inline-block align-middle m-1">
-                                        <Button variant="contained" size={"small"} color="secondary" onClick={() => clearFilterRating()} style={{marginTop: '10px'}} endIcon={<BackspaceIcon />}>
-                                            Clear
-                                        </Button>
-                                    </div>
-                                </Typography>
-                                <div style={{marginBottom: 10}}>
-                                    <TextField
-                                        id="standard-select-currency"
-                                        select
-                                        label="Rating"
-                                        value={filterRating}
-                                        color={"secondary"}
-                                        // onChange={handleFilterTypeChange}
-                                        helperText="Please select route rating"
-                                    >
-                                        {routeTypes.map((option) => (
-                                            <MenuItem key={option.id} value={option.value}>
-                                                {option.value}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                </div>
-                            </div>
+
                         </div>
 
                         <br />
@@ -482,34 +507,109 @@ export default function SearchDialog(props) {
 
                         </div>
 
+                        <div className="d-inline-block w-75">
+                            <FormControl fullWidth >
+                                <TextField value={filterSearchLocationTerm} onChange={(event) => setFilterSearchLocationTerm(event.target.value)} label="Search Locations" variant="filled" color="secondary" />
+                                <Button disabled={(!(filterSearchLocationTerm.length > 3))} variant="contained" color="secondary" style={{marginTop: '10px'}} onClick={()=> getPos()} size={"small"} >
+                                    Search Location
+                                </Button>
+                            </FormControl>
+                        </div>
+
+                        <div className="d-inline-block">
+                            <div className="m-1">
+                                <Button variant="contained" color="secondary" style={{marginTop: '10px'}} onClick={()=> clearFilterSearchLocationTerm()} size={"small"} endIcon={<BackspaceIcon />}>
+                                    Clear
+                                </Button>
+                            </div>
+
+                        </div>
+
                         <div style={{marginTop: 10, marginBottom: 25}}>
                             <Grid container spacing={4}>
-                                {filterData.map((route) => (
-                                    <Grid item key={route.id} xs={12} sm={6} md={3}>
-                                        <Card className={classes.card}>
-                                            <CardMedia
-                                                // component={"img"}
-                                                // src={process.env.PUBLIC_URL +'assets/ProjectImages/'+route.route+'.jpg'}
-                                                className={classes.cardMedia}
-                                                image={process.env.PUBLIC_URL +'assets/ProjectImages/'+route.route+'.jpg'}
-                                                title={route.route}
-                                            />
-                                            <CardContent className={classes.cardContent}>
-                                                <Typography gutterBottom variant="h5" component="h2">
-                                                    {route.route}
-                                                </Typography>
-                                                <Typography noWrap>
-                                                    {route.desc}
-                                                </Typography>
-                                            </CardContent>
-                                            <CardActions>
-                                                <RouteDialog route={route} />
-                                            </CardActions>
-                                        </Card>
-                                    </Grid>
-                                ))}
+                                {filterData.length > 0 ?
+                                    (filterData.slice(0, loadLimit).map((route) => (
+                                            <Grid item key={route.id} xs={12} sm={6} md={3}>
+                                                <Card className={classes.card}>
+                                                    <CardMedia
+                                                        component={"img"}
+                                                        src={IMAGE_URL + route.route}
+                                                        style={{paddingTop: 0, backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', maxHeight: '140px'}}
+                                                        onError={e => {
+                                                            e.target.src = IMAGE_URL_FALLBACK;
+                                                        }}
+                                                        className={classes.cardMedia}
+                                                        title={route.route}
+                                                    />
+
+                                                    <CardContent className={classes.cardContent}>
+                                                        <Typography gutterBottom variant="h5" component="h2">
+                                                            {route.route}
+                                                        </Typography>
+                                                        <Typography noWrap>
+                                                            {route.desc}
+                                                        </Typography>
+                                                    </CardContent>
+                                                    <CardActions>
+                                                        <RouteDialog route={route} />
+                                                    </CardActions>
+                                                </Card>
+                                            </Grid>
+                                        )))
+                                    :
+                                    (searchData.length > 0 &&
+                                        (searchData.slice(0, loadLimit).map((route) => (
+                                                <Grid item key={route.id} xs={12} sm={6} md={3}>
+                                                    <Card className={classes.card}>
+                                                        <CardMedia
+                                                            component={"img"}
+                                                            src={IMAGE_URL + route.route}
+                                                            style={{paddingTop: 0, backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', maxHeight: '140px'}}
+                                                            onError={e => {
+                                                                e.target.src = IMAGE_URL_FALLBACK;
+                                                            }}
+                                                            className={classes.cardMedia}
+                                                            title={route.route}
+                                                        />
+
+                                                        <CardContent className={classes.cardContent}>
+                                                            <Typography gutterBottom variant="h5" component="h2">
+                                                                {route.route}
+                                                            </Typography>
+                                                            <Typography noWrap>
+                                                                {route.desc}
+                                                            </Typography>
+                                                        </CardContent>
+                                                        <CardActions>
+                                                            <RouteDialog route={route} />
+                                                        </CardActions>
+                                                    </Card>
+                                                </Grid>
+                                            )))
+                                    )
+                                }
                             </Grid>
+
+                            <div>
+                                {(filterData.length > 10 || searchData.length > 10) &&
+                                <FormControl fullWidth >
+                                    <Button variant="contained" color="secondary" style={{marginTop: '10px'}} onClick={()=> setLoadLimit(loadLimit + 10) } size={"small"} >
+                                        Show More
+                                    </Button>
+                                </FormControl>
+                                }
+
+                                {loadLimit > 10 &&
+                                <FormControl fullWidth >
+                                    <Button variant="contained" color="secondary" style={{marginTop: '10px'}} onClick={()=>  setLoadLimit(loadLimit - 10)} size={"small"} >
+                                        Show Less
+                                    </Button>
+                                </FormControl>
+
+                                }
+                            </div>
                         </div>
+
 
 
                     </div>

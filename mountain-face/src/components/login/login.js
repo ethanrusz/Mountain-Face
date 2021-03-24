@@ -60,14 +60,9 @@ export default function Login(props) {
     };
 
     const handleLogin = () => {
-        // AuthService.login(username, password).then(res => {
-        //     if (res !== null){
-        //         if (res.accessToken !== '' || res.accessToken !== null){
-        //             props.setIsTokenSet();
-        //             props.history.push("/dashboard");
-        //         }
-        //     }
-        // });
+        localStorage.setItem("mfUsername", username);
+        props.setIsTokenSet();
+        props.history.push("/home");
     }
 
     return (
@@ -94,19 +89,6 @@ export default function Login(props) {
                         autoFocus
                         onChange={handleSetUsername}
                     />
-                    <TextField
-                        variant="filled"
-                        color="secondary"
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="password"
-                        label="Password"
-                        type="password"
-                        id="password"
-                        autoComplete="current-password"
-                        onChange={handleSetPassword}
-                    />
                     <Button
                         type="submit"
                         fullWidth
@@ -117,18 +99,7 @@ export default function Login(props) {
                     >
                         Sign In
                     </Button>
-                    <Grid container>
-                        <Grid item xs>
-                            {/*<Link href="#" variant="body2">*/}
-                            {/*    Forgot password?*/}
-                            {/*</Link>*/}
-                        </Grid>
-                        <Grid item>
-                            {/*<Link href="#" variant="body2">*/}
-                            {/*    {"Don't have an account? Sign Up"}*/}
-                            {/*</Link>*/}
-                        </Grid>
-                    </Grid>
+
                 </div>
             </div>
             <Box mt={8}>

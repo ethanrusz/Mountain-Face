@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
+import MainService from "../../services/mainService";
 
 import background from "../../assets/background.jpg";
 import {Card, CardActions, CardContent, CardMedia} from "@material-ui/core";
@@ -48,15 +49,23 @@ export default function Home(props) {
     const classes = useStyles();
     const [value, setValue] = React.useState(0);
 
+    const [randRoutes, setRandRoutes] = React.useState(null);
+
 
     useEffect(() => {
-
+        MainService.getRandom().then(randRoutesData => {
+            console.log('res');
+            console.log(randRoutesData);
+            setRandRoutes(randRoutesData)
+        });
 
 
     }, []);
 
-
-
+    const IMAGE_URL = 'http://localhost:8080/image?name='
+    // const IMAGE_URL_FALLBACK = 'http://localhost:8080/image?name=50+More+Seconds+of+Fun'
+    const IMAGE_URL_FALLBACK = 'https://cdn.pixabay.com/photo/2016/07/17/21/44/mountains-1524804_960_720.png'
+    // process.env.PUBLIC_URL +'assets/ProjectImages/'+route.route+'.jpg'
 
 
     return (
@@ -100,16 +109,21 @@ export default function Home(props) {
                 <Container className={classes.cardGrid} maxWidth="lg">
                     {/* End hero unit */}
                     <Grid container spacing={4}>
-                        {props.mockData.map((route) => (
+                        {randRoutes &&
+                        (randRoutes.map((route) => (
                             <Grid item key={route.id} xs={12} sm={6} md={3}>
                                 <Card className={classes.card}>
                                     <CardMedia
-                                        // component={"img"}
-                                        // src={process.env.PUBLIC_URL +'assets/ProjectImages/'+route.route+'.jpg'}
+                                        component={"img"}
+                                        src={IMAGE_URL + route.route}
+                                        style={{paddingTop: 0, backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', maxHeight: '140px'}}
+                                        onError={e => {
+                                            e.target.src = IMAGE_URL_FALLBACK;
+                                        }}
                                         className={classes.cardMedia}
-                                        image={process.env.PUBLIC_URL +'assets/ProjectImages/'+route.route+'.jpg'}
                                         title={route.route}
                                     />
+
                                     <CardContent className={classes.cardContent}>
                                         <Typography gutterBottom variant="h5" component="h2">
                                             {route.route}
@@ -123,7 +137,8 @@ export default function Home(props) {
                                     </CardActions>
                                 </Card>
                             </Grid>
-                        ))}
+                        )))
+                        }
                     </Grid>
                 </Container>
             </div>

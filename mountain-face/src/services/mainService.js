@@ -1,14 +1,15 @@
 import axios from "axios";
-import jwt_decode from "jwt-decode";
 
-const API_URL = "http://localhost:5000/";
+const API_URL = "http://localhost:8080";
+const API_POSITION_STACK = "http://api.positionstack.com/v1/forward?access_key=0cbef51ea0e7805960426db2adc3e757&query=";
 
 class MainService {
-    searchTerm(searchTerms) {
+
+    getRandom() {
         return axios
-            .post(  API_URL + "/search/term/", { searchTerms })
+            .get(  API_URL + "/search/random")
             .then((response) => {
-                if (response.status) {
+                if (response.data) {
                     return response.data;
                 } else {
                     return null;
@@ -19,11 +20,44 @@ class MainService {
             });
     }
 
-    searchLocation(searchLoc) {
+    getPosition(searchLoc) {
         return axios
-            .post(  API_URL + "/search/location/", { searchLoc })
+            .get(  API_POSITION_STACK + searchLoc)
             .then((response) => {
-                if (response.status) {
+                console.log(response);
+                if (response.data) {
+                    return response.data;
+                } else {
+                    return null;
+                }
+            }).catch(err => {
+                console.log('API failed:' + err)
+                return null;
+            });
+    }
+
+    searchTerm(searchTerms) {
+        return axios
+            .get(  API_URL + "/search/term?searchTerms="+searchTerms)
+            .then((response) => {
+                if (response.data) {
+                    return response.data;
+                } else {
+                    return null;
+                }
+            }).catch(err => {
+                console.log('API failed:' + err)
+                return null;
+            });
+    }
+
+    searchLocation(lat, long, maxDistance) {
+        return axios
+            .get(  API_URL + "/search/location?lat=" + lat + "&long=" + long + "&maxDistance=" + maxDistance)
+            .then((response) => {
+                console.log('fwfdsf');
+                console.log(response);
+                if (response.data) {
                     return response.data;
                 } else {
                     return null;
@@ -64,11 +98,11 @@ class MainService {
             });
     }
 
-    addComment(userID, heading, body) {
+    addComment(id , username, text) {
         return axios
-            .post(  API_URL + "/comment/", { userID, heading, body})
+            .get(  API_URL + "/comment?id="+id + "&username=" + username + "&text=" + text)
             .then((response) => {
-                if (response.status) {
+                if (response.data) {
                     return response.data;
                 } else {
                     return null;
