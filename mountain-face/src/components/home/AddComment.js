@@ -25,7 +25,7 @@ export default function AddComment(props) {
         console.log('comment');
         console.log(comment);
 
-        MainService.addComment( props.route.id, 'John Snow', comment).then(response => {
+        MainService.addComment( props.route.id, AuthService.getLocalToken(), comment).then(response => {
             if (props.comments){
                 props.setComments([
                     ...props.comments,

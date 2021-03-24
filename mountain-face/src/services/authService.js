@@ -18,7 +18,8 @@ class AuthService {
     }
 
     getLocalToken() {
-        if (localStorage.getItem('mfUsername') === '' || localStorage.getItem('mfUsername') !== null){
+        console.log(localStorage.getItem('mfUsername'))
+        if (localStorage.getItem('mfUsername') !== '' || localStorage.getItem('mfUsername') !== null){
             return localStorage.getItem('mfUsername');
         } else {
             return 'John Snow';
