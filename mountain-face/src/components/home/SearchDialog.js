@@ -352,6 +352,7 @@ export default function SearchDialog(props) {
         if (searchPosition !== null){
             MainService.searchLocation(searchPosition.latitude, searchPosition.longitude, maxDistance).then(results => {
                 console.log(results);
+                setSearchData(results);
             });
         }
 
@@ -510,6 +511,7 @@ export default function SearchDialog(props) {
                         <div className="d-inline-block w-75">
                             <FormControl fullWidth >
                                 <TextField value={filterSearchLocationTerm} onChange={(event) => setFilterSearchLocationTerm(event.target.value)} label="Search Locations" variant="filled" color="secondary" />
+                                <TextField style={{marginTop: 10}} value={maxDistance} onChange={(event) => setMaxDistance(event.target.value)} label="Search Distance" variant="filled" color="secondary" />
                                 <Button disabled={(!(filterSearchLocationTerm.length > 3))} variant="contained" color="secondary" style={{marginTop: '10px'}} onClick={()=> getPos()} size={"small"} >
                                     Search Location
                                 </Button>

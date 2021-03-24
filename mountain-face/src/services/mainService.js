@@ -55,7 +55,6 @@ class MainService {
         return axios
             .get(  API_URL + "/search/location?lat=" + lat + "&long=" + long + "&maxDistance=" + maxDistance)
             .then((response) => {
-                console.log('fwfdsf');
                 console.log(response);
                 if (response.data) {
                     return response.data;
