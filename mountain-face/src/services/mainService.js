@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080";
+const API_URL = "http://54.208.109.55:8080";
 const API_POSITION_STACK = "http://api.positionstack.com/v1/forward?access_key=0cbef51ea0e7805960426db2adc3e757&query=";
 
 class MainService {

@@ -365,7 +365,7 @@ export default function SearchDialog(props) {
         // return undefined;
     }, [filterType, filterMinDistance, filterMaxDistance, filterMinPitch, filterMaxPitch, filterRating, filterSearchRouteTerm]);
 
-    const IMAGE_URL = 'http://localhost:8080/image?name='
+    const IMAGE_URL = 'http://54.208.109.55:8080/image?name='
     // const IMAGE_URL_FALLBACK = 'http://localhost:8080/image?name=50+More+Seconds+of+Fun'
     const IMAGE_URL_FALLBACK = 'https://cdn.pixabay.com/photo/2016/07/17/21/44/mountains-1524804_960_720.png'
 
